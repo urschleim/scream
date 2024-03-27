@@ -245,6 +245,23 @@
  | (get-environment-variables)  process context library procedure; r7rs p60
  |#
 (define (get-environment-variables)
+  (let*
+    (
+      (system (make-object java.lang.System))
+      (env (system (getenv)))
+      (keySet (env (keySet)))
+      (keyVector (keySet (toArray)))
+    )
+
+    (vector->list (vector-map
+      (lambda (key)
+        (cons key (env (get key))))
+      keyVector))
+  )
+)
+
+#|
+(define (get-environment-variables)
 
   ; Support: "a=b" => ("a" . "b")
   (define (split-at-equals string)
@@ -300,6 +317,7 @@
     )
   )
 )
+|#
 
 ;;
 ;; Time operations

@@ -116,7 +116,7 @@ public class R7rs_6_14_System_interface_Test extends ScreamBaseTest
         var t = makeTester();
 
         var val = t.execute(
-                "(get-environment-variable \"USER\")" );
+                "(get-environment-variable \"JAVA_HOME\")" );
         assertInstanceOf( SchemeString.class, val );
 
         t.expectFco(
