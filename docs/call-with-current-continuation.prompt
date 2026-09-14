@@ -1,0 +1,16 @@
+The following is a scheme language example executed using Chez Scheme:
+
+```
+(define (mondo-bizarro)
+  (let ((k (call-with-current-continuation (lambda (c) c))))
+    (display 1)
+    (call-with-current-continuation (lambda (c) (k c)))
+    (display 2)
+    (call-with-current-continuation (lambda (c) (k c)))
+    (display 3)))
+```
+
+The result of executing '(mondo-bizarro)' is '11213'.
+
+From this information create a detailed documentation on the behaviour of the scheme 'call-with-current-continuation'-operation,
+special interest is on the handling of the environments on calling and returning from the created continuations.
