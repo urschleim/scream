@@ -80,6 +80,75 @@ public class PrimitivesTest extends ScreamBaseTest
     }
 
     @Test
+    public void _evalCons_empty() throws Exception
+    {
+        var env = makeEnvironment();
+
+        var result = cont().toStack(
+                cont -> Primitives._evalCons(
+                        env,
+                        Cons.NIL,
+                        next -> cont.accept( next ) ) );
+
+        assertEqualq( Cons.NIL, result );
+    }
+
+    @Test
+    public void _evalCons_literals() throws Exception
+    {
+        var env = makeEnvironment();
+
+        Cons expr = Scut.as( Cons.class, parse( "(1 2 3)" ) );
+
+        var result = cont().toStack(
+                cont -> Primitives._evalCons(
+                        env,
+                        expr,
+                        next -> cont.accept( next ) ) );
+
+        // Self-evaluating literals evaluate to themselves, in order.
+        assertEqualq( expr, result );
+    }
+
+    @Test
+    public void _evalCons_symbols() throws Exception
+    {
+        var env = makeEnvironment();
+        env.define( s( "a" ), i( 1 ) );
+        env.define( s( "b" ), i( 2 ) );
+
+        Cons expr = Scut.as( Cons.class, parse( "(a b)" ) );
+        Cons expected = Scut.as( Cons.class, parse( "(1 2)" ) );
+
+        var result = cont().toStack(
+                cont -> Primitives._evalCons(
+                        env,
+                        expr,
+                        next -> cont.accept( next ) ) );
+
+        assertEqualq( expected, result );
+    }
+
+    @Test
+    public void _evalCons_unbound() throws Exception
+    {
+        var env = makeEnvironment();
+
+        Cons expr = Scut.as( Cons.class, parse( "(undefinedSymbol)" ) );
+
+        RuntimeX rx =
+                assertThrows(
+                        RuntimeX.class,
+                        () -> cont().toStack(
+                                cont -> Primitives._evalCons(
+                                        env,
+                                        expr,
+                                        next -> cont.accept( next ) ) ) );
+
+        assertEquals( Code.SYMBOL_NOT_DEFINED, rx.getCode() );
+    }
+
+    @Test
     public void _if_true() throws Exception
     {
         Environment env =

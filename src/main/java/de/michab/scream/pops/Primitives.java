@@ -5,6 +5,8 @@
  */
 package de.michab.scream.pops;
 
+import org.smack.util.Pair;
+
 import de.michab.scream.Raise;
 import de.michab.scream.fcos.Bool;
 import de.michab.scream.fcos.Cons;
@@ -541,6 +543,59 @@ public class Primitives
     }
 
     /**
+     * Executes a let expression.
+     *
+     * (let 
+     *   (
+     *     (x 5)
+     *     (y 10)
+     *   )
+     * 
+     *   (+ x y)
+     * )
+     *
+     * @param e The environment used for evaluation of the expressions.
+     * @param extended The environment receiving the new bindings.
+     * @param bindings The bindings. ((x 5) (y 10))
+     * @param body The body executed after the binding phase.
+     * @param c Returns the result of body evaluation.
+     * @return A think.
+     */
+    public static Thunk _letNew(
+            Environment e,
+            Environment extended,
+            Cons bindings,
+            Cons body,
+            Cont<FirstClassObject> c )
+    {
+        // Split the bindings.
+        // - Create a list 'symbols' of the to-be-bound symbols. (car of the bindings)
+        
+        // - Create a list 'exprs' of the to-be-evaluated expressions. (cdr of the bindings)
+        //
+        // Create a list 'evaluated' of the expressions evaluation results. (_eval_cons)
+
+        // Create a new environment extended from the current one.
+        // Bind each symbol to the corresponding evaluation result in this new environment.
+        // Execute the body in the context of the extended environment.
+
+        Cont<Environment> begin =
+                ext -> {
+                    REGS.CENV( ext );
+                    return _begin(
+                        ext,
+                        body,
+                        c );
+                };
+
+        return _bind(
+                e,
+                extended,
+                bindings,
+                begin );
+    }
+
+    /**
      *
      * @param e
      * @param bindings
@@ -591,6 +646,49 @@ public class Primitives
     {
         return () -> FirstClassObject.evaluate( o, e, c );
     }
+ 
+    /**
+     * A combined type holding a first-class object and an environment.
+     * This is passed in the continuation chain that performs evaluation.
+     * It is needed since an evaluation is able to switch the environment in each step and
+     * has to deliver: 
+     * - the result of the evaluation in the fco member.
+     * - the environment to be used in the next step of the evaluation chain.
+     * 
+     * This is a late learning that was triggered by the mondo-bizarro call/cc test.
+     * 
+     * This is highly experimental.  If the concept holds, the complete evaluation system
+     * will be refactored to consistently use EvalContext for passing both the result and
+     * the environment.
+     * 
+     * Concept holds means that mondo-bizzaro call/cc tests can be correctly handled.
+     * This is currently not possible.
+     */
+    class EvalContext {
+        FirstClassObject fco;
+        Environment env;
+
+        EvalContext( FirstClassObject o, Environment e ) {
+            this.fco = o;
+            this.env = e;
+        }
+    }
+
+//     /**
+//      * Evaluate an object.
+//      *
+//      * @param e The environment for evaluation.
+//      * @param o The object to evaluate.
+//      * @param c The continuation receiving the result.
+//      * @return The thunk.
+//      */
+//     public static Thunk _evalx(
+//             Environment e,
+//             FirstClassObject o,
+//             Cont<EvalContext> ec )
+//     {
+//         return () -> FirstClassObject.evaluate( o, e, c );
+//     }
 
     /**
      * Shortcut or.

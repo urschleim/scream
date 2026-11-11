@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Scream",
+            "request": "launch",
+            "mainClass": "scream/de.michab.scream.Scream",
+            "projectName": "scream"
+        },
+        {
+            "type": "java",
+            "name": "ScreamUi",
+            "request": "launch",
+            "mainClass": "scream/de.michab.scream.ui.ScreamUi",
+            "projectName": "scream"
+        },
+        {
+            "type": "java",
+            "name": "LogUtil",
+            "request": "launch",
+            "mainClass": "scream/de.michab.scream.util.LogUtil",
+            "projectName": "scream"
+        },
+        {
+            "type": "java",
+            "name": "Mondo",
+            "request": "launch",
+            "mainClass": "scream/mondo.Mondo",
+            "projectName": "scream"
+        }
+    ]
+}
