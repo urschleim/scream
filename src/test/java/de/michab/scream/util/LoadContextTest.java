@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
@@ -20,8 +21,8 @@ public class LoadContextTest
     @Test
     public void urlJar() throws Exception
     {
-        URL u = new URL(
-                "jar:http://www.oreilly.com/javaio.jar!/com/elharo/io/StreamCopier.class");
+        URL u = URI.create(
+                "jar:http://www.oreilly.com/javaio.jar!/com/elharo/io/StreamCopier.class").toURL();
 
         LoadContext lc = new LoadContext( u );
 
@@ -36,8 +37,8 @@ public class LoadContextTest
     @Test
     public void urlFile() throws Exception
     {
-        URL u = new URL(
-                "file:/Users/micbinz/git/github/app_scream/target/classes/de/michab/scream/extensions/basic.s");
+        URL u = URI.create(
+                "file:/Users/micbinz/git/github/app_scream/target/classes/de/michab/scream/extensions/basic.s").toURL();
 
         LoadContext lc = new LoadContext( u );
 
@@ -117,8 +118,8 @@ public class LoadContextTest
     @Test
     public void relativeJarHttp() throws Exception
     {
-        URL a = new URL(
-                "jar:http://www.oreilly.com/javaio.jar!/com/elharo/io/A.class");
+        URL a = URI.create(
+                "jar:http://www.oreilly.com/javaio.jar!/com/elharo/io/A.class").toURL();
         LoadContext lca = new LoadContext( a );
         assertTrue( lca.isAbsolute() );
         assertFalse( lca.isFile() );
@@ -141,8 +142,8 @@ public class LoadContextTest
     @Test
     public void relativeJarFile() throws Exception
     {
-        URL a = new URL(
-                "jar:file:/Users/micbinz/git/github/app_scream/target/app_scream-0.0.1-SNAPSHOT.jar!/de/michab/scream/extensions/common-init.s");
+        URL a = URI.create(
+                "jar:file:/Users/micbinz/git/github/app_scream/target/app_scream-0.0.1-SNAPSHOT.jar!/de/michab/scream/extensions/common-init.s").toURL();
         LoadContext lca = new LoadContext( a );
         assertTrue( lca.isAbsolute() );
         assertFalse( lca.isFile() );

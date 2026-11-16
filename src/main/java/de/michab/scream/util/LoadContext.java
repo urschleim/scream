@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Stack;
 
@@ -42,17 +42,17 @@ public class LoadContext
     {
         try
         {
-            return new URL( name );
+            return new URI( name ).toURL();
         }
-        catch ( MalformedURLException ignore )
+        catch ( Exception ignore )
         {
         }
 
         try
         {
-            return new URL( FILE_PROTOCOL + ":" + name );
+            return new URI( FILE_PROTOCOL + ":" + name.replace( '\\', '/' ) ).toURL();
         }
-        catch ( MalformedURLException ignore )
+        catch ( Exception ignore )
         {
         }
 
@@ -123,7 +123,7 @@ public class LoadContext
         if ( _isFile )
             return new FileInputStream( _file );
 
-        return new URL( toString() ).openStream();
+        return toUrl().openStream();
     }
 
     private URL toUrl()
