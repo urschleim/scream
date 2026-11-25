@@ -62,8 +62,8 @@ public class Procedure
     }
 
     /**
-     * A template function to be overridden instead of
-     * {@link #execute(Environment, Cons, Cont)}.
+     * Evaluates the arguments in the received environment and executes
+     * the Procedure.
      *
      * @param e The environment used for argument evaluation.
      * @param args The arguments for the execution.
@@ -71,7 +71,8 @@ public class Procedure
      * @return A thunk.
      * @throws RuntimeX
      */
-    public Thunk _execute( Environment e, Cons args, Cont<FirstClassObject> c )
+    @Override
+    public final Thunk execute( Environment e, Cons args, Cont<FirstClassObject> c )
         throws RuntimeX
     {
         return Primitives._evalCons(
@@ -81,56 +82,25 @@ public class Procedure
     }
 
     /**
-     * Evaluates the arguments in the received environment and executes
-     * the Procedure.
-     *
-     * @param e The environment used for argument evaluation.
-     * @param args The arguments for the execution.
-     * @param c Receives the result.
-     * @return A thunk.
-     */
-    @Override
-    public final Thunk execute( Environment e, Cons args, Cont<FirstClassObject> c )
-    {
-        return () -> _execute( e, args, c );
-    }
-
-    /**
      * Executes this Procedure with the passed arguments.
      * The arguments are expected to be already evaluated.
      * No environment needed since the Procedure is executed
      * in its closure.
+     * <p>
+     * Java-defined procedures implement their body by overriding
+     * {@code _executeImpl(Environment, Cons, Cont)} (see {@link Operation}),
+     * not this operation.
      *
      * @param args The already evaluated arguments.
      * @param c The result.
      * @return A thunk.
      * @throws RuntimeX
      */
-    public Thunk _apply( Cons args, Cont<FirstClassObject> c  )
+    public Thunk apply( Cons args, Cont<FirstClassObject> c  )
             throws RuntimeX
     {
         return _executeImpl(
                 _closure,
-                args,
-                c );
-    }
-
-    /**
-     * Executes this Procedure with the passed arguments.
-     * The arguments are expected to be already evaluated.
-     * No environment needed since the Procedure is executed
-     * in its closure.
-     * <p>
-     * Override {@link #_apply(Cons, Cont)} instead of this
-     * operation.
-     *
-     * @param args The arguments for the execution.
-     * @param c Receives the result.
-     * @return A thunk.
-     */
-    public final Thunk apply( Cons args, Cont<FirstClassObject> c  )
-    {
-        return () -> _apply(
                 args,
                 c );
     }

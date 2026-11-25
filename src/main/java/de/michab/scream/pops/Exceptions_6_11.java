@@ -35,7 +35,7 @@ public abstract class Exceptions_6_11
         return new Procedure( "with-exception-handler", closure )
         {
             @Override
-            public Thunk _apply( Cons args,
+            public Thunk apply( Cons args,
                     Cont<FirstClassObject> c )
                 throws RuntimeX
             {
@@ -101,7 +101,7 @@ public abstract class Exceptions_6_11
         return new Procedure( "raise", e )
         {
             @Override
-            public Thunk _apply(
+            public Thunk apply(
                     Cons args,
                     Cont<FirstClassObject> c )
                             throws RuntimeX
@@ -119,7 +119,7 @@ public abstract class Exceptions_6_11
         return new Procedure( "raise-continuable", e )
         {
             @Override
-            public Thunk _apply(
+            public Thunk apply(
                     Cons args,
                     Cont<FirstClassObject> c )
                             throws RuntimeX

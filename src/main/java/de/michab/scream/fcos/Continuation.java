@@ -149,7 +149,7 @@ public class Continuation extends Procedure implements Cont<FirstClassObject>
     }
 
     @Override
-    public Thunk accept( FirstClassObject result )
+    public Thunk accept( FirstClassObject result ) throws RuntimeX
     {
         return _cont.accept( result );
     }

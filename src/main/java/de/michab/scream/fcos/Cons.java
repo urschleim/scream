@@ -421,16 +421,18 @@ public class Cons
             Cont<FirstClassObject> c )
         throws RuntimeX
     {
+        Operation operation;
+
         try
         {
-            return Scut.asNotNil(
-                    Operation.class,
-                    op ).execute( e, args, c );
+            operation = Scut.asNotNil( Operation.class, op );
         }
         catch ( RuntimeX rx )
         {
             throw Raise.mCalledNonProcedural( op ).addCause( rx );
         }
+
+        return operation.execute( e, args, c );
     }
 
     private Thunk _thunked_performInvocation(

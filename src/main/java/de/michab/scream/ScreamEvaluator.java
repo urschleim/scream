@@ -78,8 +78,8 @@ public final class ScreamEvaluator implements ScriptEngine
     /**
      * The continuation processor.
      */
-    private final Continuation<FirstClassObject,RuntimeX> _continuation =
-            new Continuation<>( RuntimeX.class );
+    private final Continuation<FirstClassObject> _continuation =
+            new Continuation<>();
 
     /**
      * The relative path to our extensions package.
@@ -291,7 +291,7 @@ public final class ScreamEvaluator implements ScriptEngine
     }
 
     // Check if this is a good position.
-    public static ThreadLocal<Continuation<FirstClassObject,RuntimeX>> CONT =
+    public static ThreadLocal<Continuation<FirstClassObject>> CONT =
             new ThreadLocal<>();
 
     private FirstClassObject evalImpl(

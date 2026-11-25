@@ -334,9 +334,9 @@ public class ScreamBaseTest
         }
     }
 
-    protected Continuation<FirstClassObject,RuntimeX> cont()
+    protected Continuation<FirstClassObject> cont()
     {
-        return new Continuation<FirstClassObject,RuntimeX>( RuntimeX.class );
+        return new Continuation<FirstClassObject>();
     }
 
 
