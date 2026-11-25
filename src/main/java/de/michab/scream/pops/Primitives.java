@@ -6,6 +6,7 @@
 package de.michab.scream.pops;
 
 import de.michab.scream.Raise;
+import de.michab.scream.RuntimeX;
 import de.michab.scream.fcos.Bool;
 import de.michab.scream.fcos.Cons;
 import de.michab.scream.fcos.Environment;
@@ -296,6 +297,7 @@ public class Primitives
             Cons body,
             FirstClassObject previousResult,
             Cont<FirstClassObject> c )
+                    throws RuntimeX
     {
         if ( body == Cons.NIL )
             return c.accept( previousResult );
@@ -318,6 +320,7 @@ public class Primitives
             Environment e,
             Cons body,
             Cont<FirstClassObject> c )
+                    throws RuntimeX
     {
         return _begin(
                 e,
@@ -644,6 +647,7 @@ public class Primitives
     public static Thunk _quote(
             FirstClassObject quote,
             Cont<FirstClassObject> c)
+                    throws RuntimeX
     {
         return c.accept( quote );
     }

@@ -400,8 +400,9 @@ extends FirstClassObject
             Environment e,
             Cons args,
             Cont<FirstClassObject> c )
+                    throws RuntimeX
     {
-        return () -> _executeImpl( e, args, c );
+        return _executeImpl( e, args, c );
     }
 
     /**

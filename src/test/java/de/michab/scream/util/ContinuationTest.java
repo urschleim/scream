@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
-import org.smack.util.Holder;
 
 import de.michab.scream.Raise;
 import de.michab.scream.RuntimeX;
@@ -22,17 +21,6 @@ import de.michab.scream.util.Continuation.Thunk;
 
 public class ContinuationTest extends ScreamBaseTest
 {
-    @SuppressWarnings("serial")
-    static class TotalX extends Exception
-    {
-        public final int _total;
-
-        public TotalX( int a, int b )
-        {
-            _total = a + b;
-        }
-    }
-
     private Thunk add( int a, int b, Cont<Integer> c )
     {
         return () -> c.accept( a + b );
@@ -53,8 +41,8 @@ public class ContinuationTest extends ScreamBaseTest
     @Test
     public void basic() throws Exception
     {
-        Continuation<Integer, Exception> continuation =
-                new Continuation<>( Exception.class );
+        Continuation<Integer> continuation =
+                new Continuation<>();
 
         continuation.thunkCount(0);
 
@@ -68,8 +56,8 @@ public class ContinuationTest extends ScreamBaseTest
     @Test
     public void basic2() throws Exception
     {
-        Continuation<Integer, Exception> continuation =
-                new Continuation<>( Exception.class );
+        Continuation<Integer> continuation =
+                new Continuation<>();
 
         continuation.thunkCount(0);
 
@@ -83,8 +71,8 @@ public class ContinuationTest extends ScreamBaseTest
     @Test
     public void testSuccess() throws Exception
     {
-        Continuation<Integer, Exception> continuation =
-                new Continuation<>( Exception.class );
+        Continuation<Integer> continuation =
+                new Continuation<>();
 
         int result = continuation.toStack(
                 cont-> add(3,4,cont) );
@@ -95,43 +83,13 @@ public class ContinuationTest extends ScreamBaseTest
     @Test
     public void testException()
     {
-        Continuation<Integer, Exception> continuation =
-                new Continuation<>( Exception.class );
+        Continuation<Integer> continuation =
+                new Continuation<>();
 
         assertThrows(
                 ArithmeticException.class,
                 () -> continuation.toStack(
                     cont-> addx(3,4,cont) ) );
-    }
-
-    private Thunk addWithTotalX( int a, int b, Cont<Integer> c) throws TotalX
-    {
-        return () -> {
-            throw new TotalX( 3, 4 );
-            };
-    }
-
-    @Test
-    public void testException2() throws Exception
-    {
-        Continuation<Integer, TotalX> continuation =
-                new Continuation<>( TotalX.class );
-
-        Holder<TotalX> aeh =
-                new Holder<>();
-
-        Cont<TotalX> handler =
-                ae -> {
-                    aeh.set( ae );
-                    return null;
-                };
-
-        Integer result = continuation.toStack(
-                cont -> addWithTotalX( 3, 4, cont ),
-                handler );
-
-        assertEquals( null, result );
-        assertEquals( 7, aeh.get()._total );
     }
 
     private Thunk addFco( Int si1, Int si2, Cont<FirstClassObject> cont )
@@ -142,7 +100,7 @@ public class ContinuationTest extends ScreamBaseTest
     @Test
     public void testFcoFunc() throws Exception
     {
-        Continuation<FirstClassObject, RuntimeX> cont = new Continuation<>( RuntimeX.class );
+        Continuation<FirstClassObject> cont = new Continuation<>();
 
         var fco = cont.toStack( continuation -> addFco( i1, i2, continuation ) );
 
@@ -158,7 +116,7 @@ public class ContinuationTest extends ScreamBaseTest
     @Test
     public void testFcoException() throws Exception
     {
-        Continuation<FirstClassObject, RuntimeX> cont = new Continuation<>( RuntimeX.class );
+        Continuation<FirstClassObject> cont = new Continuation<>();
 
         Continuation.ToStackOp<FirstClassObject> tsfco = c -> throwRtx( i1, i2, c );
 

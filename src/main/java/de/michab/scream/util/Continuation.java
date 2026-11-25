@@ -10,7 +10,9 @@ import java.util.Deque;
 import java.util.Objects;
 
 import org.smack.util.Holder;
-import org.smack.util.JavaUtil.SupplierX;
+import org.smack.util.FunctionalUtil.SupplierX;
+
+import de.michab.scream.RuntimeX;
 
 /**
  * Trampoline-based continuation-passing infrastructure used to evaluate
@@ -20,14 +22,15 @@ import org.smack.util.JavaUtil.SupplierX;
  * <p>
  * Computations are expressed as chains of {@link Thunk}s. {@link #toStack}
  * repeatedly runs a thunk chain to completion ({@link #trampoline}) and
- * returns the final result of type {@code T}. Exceptions of the declared
- * type {@code X} that occur while a chain is running are not propagated
- * natively; instead they are redirected to whichever {@link Cont} is
- * currently on top of the handler stack maintained by
- * {@link #pushExceptionHandler} / {@link #popExceptionHandler}, which is
- * how {@code with-exception-handler} is implemented. Pushes and pops of
- * that handler stack must be balanced by the caller; an unmatched pop
- * fails fast (see {@link #popExceptionHandler}).
+ * returns the final result of type {@code T}. {@link RuntimeX}s that occur
+ * while a chain is running are not propagated natively; instead they are
+ * redirected to whichever {@link Cont} is currently on top of the handler
+ * stack maintained by {@link #pushExceptionHandler} /
+ * {@link #popExceptionHandler}, which is how
+ * {@code with-exception-handler} is implemented. Pushes and pops of that
+ * handler stack must be balanced by the caller; an unmatched pop fails
+ * fast (see {@link #popExceptionHandler}). All other, unchecked,
+ * exceptions propagate natively.
  * <p>
  * A single instance is designed to be reused across many, possibly
  * nested or sequential, {@link #toStack} calls (see {@code ScreamEvaluator}
@@ -43,16 +46,12 @@ import org.smack.util.JavaUtil.SupplierX;
  * of one instance from multiple threads is unsupported.
  *
  * @param <T> The overall result type produced by a completed thunk chain.
- * @param <X> The exception type intercepted and redirected to the
- * exception handler stack; other exceptions propagate natively.
  *
  * @author micbinz
  */
-public class Continuation<T, X extends Exception>
+public class Continuation<T>
 {
     private long _thunkCount;
-
-    private final Class<X> _exceptionClass;
 
     /**
      * Will receive the result for all continuation invocations.
@@ -77,46 +76,35 @@ public class Continuation<T, X extends Exception>
      */
     private final Holder<T> _result = new Holder<>();
 
-    /**
-     * Create an instance.
-     *
-     * @param exceptionClass The class of the handled exception type.
-     */
-    public Continuation( Class<X>  exceptionClass )
-    {
-        _exceptionClass = exceptionClass;
-    }
-
     @FunctionalInterface
     public static interface ToStackOp<T> {
         Thunk call( Cont<T> c )
-            throws Exception;
+            throws RuntimeX;
     }
 
     @FunctionalInterface
     public static interface Cont<R> {
-        Thunk accept(R result);
+        Thunk accept(R result) throws RuntimeX;
     }
 
     @FunctionalInterface
     public static interface Thunk {
-        Thunk run() throws Exception;
+        Thunk run() throws RuntimeX;
     }
 
-    private Deque<Cont<X>> _exceptionHandlers = new ArrayDeque<>();
+    private Deque<Cont<RuntimeX>> _exceptionHandlers = new ArrayDeque<>();
 
     /**
-     * Runs the passed thunk chain to completion, redirecting exceptions of
-     * type {@code X} to the exception handler currently on top of
-     * {@link #_exceptionHandlers}.
+     * Runs the passed thunk chain to completion, redirecting {@link RuntimeX}s
+     * to the exception handler currently on top of {@link #_exceptionHandlers}.
      *
      * @param t The thunk to execute.
-     * @throws Exception If an exception not assignable to {@code X} happens,
-     * or if the exception handler invoked for an {@code X} itself throws.
+     * @throws RuntimeX If the exception handler invoked for a {@link RuntimeX}
+     * itself throws.
      */
     private void trampoline(
             Thunk t )
-                    throws Exception
+                    throws RuntimeX
     {
         while ( t != null )
         {
@@ -126,17 +114,12 @@ public class Continuation<T, X extends Exception>
             {
                 t = t.run();
             }
-            catch ( Exception e )
+            catch ( RuntimeX rx )
             {
-                // If the exception is of type xClass ...
-                if ( _exceptionClass.isAssignableFrom( e.getClass() ) )
-                    // ... then the passed exception continuation is called.
-                    // If this in turn throws an exception then thunk processing
-                    // is terminated.
-                    t = _exceptionHandlers.peek().accept( _exceptionClass.cast( e ) );
-                else
-                    // Otherwise terminate.
-                    throw e;
+                // The passed exception continuation is called. If this in
+                // turn throws an exception then thunk processing is
+                // terminated.
+                t = _exceptionHandlers.peek().accept( rx );
             }
         }
     }
@@ -165,19 +148,17 @@ public class Continuation<T, X extends Exception>
      * return the result on the stack.
      *
      * @param <T> The result type.
-     * @param <X> The type of the exception that is handled.
      * @param op The operation to execute.
      * @param exceptionHandler The exception handler.  Must not
      * be {@code null}.
-     * @param exceptionClass The type of the exception that is handled.
      * @return The result of the passed operation.
-     * @throws Exception
+     * @throws RuntimeX
      */
     public
     T toStack(
             ToStackOp<T> op,
-            Cont<X> exceptionHandler )
-        throws Exception
+            Cont<RuntimeX> exceptionHandler )
+        throws RuntimeX
     {
         Objects.requireNonNull( exceptionHandler );
 
@@ -213,15 +194,15 @@ public class Continuation<T, X extends Exception>
      * @param <T> The result type.
      * @param op The operation to execute.
      * @return The result of the passed operation.
-     * @throws Exception
+     * @throws RuntimeX
      */
     public
     T toStack( ToStackOp<T> op )
-        throws Exception
+        throws RuntimeX
     {
-        Holder<X> exception = new Holder<>();
+        Holder<RuntimeX> exception = new Holder<>();
 
-        Cont<X> handler =
+        Cont<RuntimeX> handler =
                 ae -> {
                     exception.set( ae );
                     return null;
@@ -235,12 +216,21 @@ public class Continuation<T, X extends Exception>
         return _result.get();
     }
 
-    public <R> Thunk toCont( SupplierX<R> supplier, Cont<R> c )
+    /**
+     * Adapts a {@link SupplierX} typed to {@link RuntimeX} into a
+     * {@link Thunk}.
+     *
+     * @param <R> The result type returned by the supplier.
+     * @param supplier Supplies the value passed to {@code c}.
+     * @param c Receives the supplied value.
+     * @return A thunk.
+     */
+    public <R> Thunk toCont( SupplierX<R,RuntimeX> supplier, Cont<R> c )
     {
         return () -> c.accept( supplier.get() );
     }
 
-    public void pushExceptionHandler( Cont<X> handler )
+    public void pushExceptionHandler( Cont<RuntimeX> handler )
     {
         _exceptionHandlers.push(
                 Objects.requireNonNull( handler ) );
@@ -256,7 +246,7 @@ public class Continuation<T, X extends Exception>
      * This guards against a confusing raw {@code NoSuchElementException}
      * from an unbalanced push/pop in caller code.
      */
-    public Cont<X> popExceptionHandler()
+    public Cont<RuntimeX> popExceptionHandler()
     {
         if ( _exceptionHandlers.isEmpty() )
             throw new IllegalStateException(
